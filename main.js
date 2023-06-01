@@ -1,6 +1,5 @@
 import vision from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0"
 const { FaceLandmarker, FilesetResolver, DrawingUtils } = vision
-
 let faceLandmarker
 let runningMode = "VIDEO"
 let webcamRunning = false
@@ -12,6 +11,8 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js"
 let camera, scene, renderer, clock, model, upperBeak, lowerBeak, gui
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
 import * as dat from "dat.gui"
+var canvas = document.getElementById("3d-canvas")
+
 
 init()
 animate()
@@ -23,7 +24,7 @@ function init() {
     0.01,
     10
   )
-  camera.position.set(0, -1, 5)
+  camera.position.set(0, -5, 5)
 
   clock = new THREE.Clock()
   gui = new dat.GUI()
@@ -60,9 +61,9 @@ function init() {
     scene.add(model)
   })
 
-  renderer = new THREE.WebGLRenderer({ antialias: true })
+  renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas })
   renderer.setPixelRatio(window.devicePixelRatio)
-  renderer.setSize(window.innerWidth, window.innerHeight)
+  renderer.setSize(window.innerWidth/2, window.innerHeight/2)
   //   renderer.outputEncoding = THREE.sRGBEncoding
   document.body.appendChild(renderer.domElement)
 
