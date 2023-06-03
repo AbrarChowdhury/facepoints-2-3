@@ -7,6 +7,7 @@
 
 ## Approach to the project v-1.1
 Now objects can be moved using bones. And I have been able to move the bones using the face landmarks. 
+- To get the labels for face landmarks I can just plot the cordinates on any plane and figure out the labels. any 2d art software can be used for this.
 - The next step is to make the movement of the bones more natural. 
  - Adjusting weight painting can go a long way
  - Animations can be used to make the movement more natural
@@ -17,3 +18,4 @@ A good idea would be to use face-points to only move the lips and the eyeballs. 
 - [Easy mouth rig in Blender](https://www.youtube.com/watch?v=6nmT123wVe4)
 - [Creating bone handles that moves on a 2d plane](https://www.youtube.com/watch?v=pCcHi-az8Ts)
 - [Media pipe face point implementation](https://codepen.io/mediapipe-preview/pen/OJBVQJm)
+- [simple face-api implementation article](https://javascript.plainenglish.io/real-time-facial-detection-twith-vanilla-javascrip-and-face-api-js-3fac3f1b543e)
