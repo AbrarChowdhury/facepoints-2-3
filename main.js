@@ -1,6 +1,5 @@
-import vision from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0"
-const { FaceLandmarker, FilesetResolver, DrawingUtils } = vision
-let faceLandmarker
+import * as faceapi from './js/face-api.js';
+
 let runningMode = "VIDEO"
 let webcamRunning = false
 const video = document.getElementById("webcam")
@@ -11,6 +10,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js"
 let camera, scene, renderer, clock, model, upperBeak, lowerBeak, gui
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
 import * as dat from "dat.gui"
+
 var canvas = document.getElementById("3d-canvas")
 
 
@@ -63,7 +63,7 @@ function init() {
 
   renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas })
   renderer.setPixelRatio(window.devicePixelRatio)
-  renderer.setSize(window.innerWidth/2, window.innerHeight/2)
+  renderer.setSize(window.innerWidth / 2, window.innerHeight / 2)
   //   renderer.outputEncoding = THREE.sRGBEncoding
   document.body.appendChild(renderer.domElement)
 
@@ -102,69 +102,91 @@ function animate() {
   renderer.render(scene, camera)
 }
 
-async function initLandmarkDetection() {
-  // Read more `CopyWebpackPlugin`, copy wasm set from "https://cdn.skypack.dev/node_modules" to `/wasm`
-  const filesetResolver = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
-  )
-  faceLandmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
-    baseOptions: {
-      modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
-      delegate: "GPU",
-    },
-    outputFaceBlendshapes: true,
-    runningMode,
-    numFaces: 1,
-  })
-}
-initLandmarkDetection()
-
-function enableCam() {
-  console.log("model loaded", faceLandmarker)
-  const constraints = { video: true }
-  // Activate the webcam stream.
-  navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
-    video.srcObject = stream
-    console.log("enabled webcam")
-    video.addEventListener("loadeddata", predictWebcam)
-  })
-}
-
-// executeWhenTrue(!Boolean(faceLandmarker),enableCam)
-setTimeout(() => {
-  enableCam()
-}, 3000)
 
 let lastVideoTime = -1
 let results = undefined
 async function predictWebcam() {
+
+
   console.log("predicting webcam")
   // Now let's start detecting the stream.
 
   // await faceLandmarker.setOptions({ runningMode: "VIDEO" });
   let nowInMs = Date.now()
-  if (lastVideoTime !== video.currentTime) {
-    lastVideoTime = video.currentTime
-    results = faceLandmarker.detectForVideo(video, nowInMs)
-    console.log("results", results)
-    // .find(o => o.categories === 'jawOpen')
-    console.log(
-      "results",
-      results.faceBlendshapes[0]?.categories.find(
-        (o) => o.categoryName === "jawOpen"
-      )
-    )
-    if (
-      results.faceBlendshapes[0]?.categories.find(
-        (o) => o.categoryName === "jawOpen"
-      )?.score > 0.1
-    ) {
-      jawOpen = true
-    } else {
-      jawOpen = false
-    }
-    results = undefined
-  }
-  // Call this function again to keep predicting when the browser is ready.
-  window.requestAnimationFrame(predictWebcam)
+  //   if (lastVideoTime !== video.currentTime) {
+  //     lastVideoTime = video.currentTime
+  //     results = faceLandmarker.detectForVideo(video, nowInMs)
+  //     console.log("results", results)
+  //     // .find(o => o.categories === 'jawOpen')
+  //     console.log(
+  //       "results",
+  //       results.faceBlendshapes[0]?.categories.find(
+  //         (o) => o.categoryName === "jawOpen"
+  //       )
+  //     )
+  //     if (
+  //       results.faceBlendshapes[0]?.categories.find(
+  //         (o) => o.categoryName === "jawOpen"
+  //       )?.score > 0.1
+  //     ) {
+  //       jawOpen = true
+  //     } else {
+  //       jawOpen = false
+  //     }
+  //     results = undefined
+  //   }
+  //   // Call this function again to keep predicting when the browser is ready.
+  //   window.requestAnimationFrame(predictWebcam)
 }
+
+async function run() {
+  // console.log("function runs")
+  // load face detection and face landmark models
+  await changeFaceDetector(TINY_FACE_DETECTOR)
+  await faceapi.loadFaceLandmarkModel("/")
+  changeInputSize(224)
+
+  // try to access users webcam and stream the images
+  // to the video element
+ 
+}
+
+document.addEventListener("onloadedmetadata", onPlay())
+
+async function onPlay() {
+  
+  console.log("onPlay triggered")
+  const stream = await navigator.mediaDevices.getUserMedia({ video: {} })
+  const videoEl = $("#localVideo").get(0)
+  videoEl.srcObject = stream
+
+  // if (videoEl.paused) {
+  //   videoEl.play()
+  //   console.log("forced play")
+  // }
+
+  // if (videoEl.ended || !isFaceDetectionModelLoaded()) {
+  //   console.log("stuck in if")
+  //   return setTimeout(() => onPlay())
+  // }
+
+  // const options = getFaceDetectorOptions()
+
+  // const ts = Date.now()
+
+  // const result = await faceapi
+  //   .detectSingleFace(videoEl, options)
+  //   .withFaceLandmarks()
+
+  // updateTimeStats(Date.now() - ts)
+
+  // if (result) {
+  //   console.log(result);
+  // }
+  // setTimeout(() => onPlay())
+}
+$(document).ready(function () {
+  //renderNavBar('#navbar', 'webcam_face_landmark_detection')
+  initFaceDetectionControls()
+  run()
+})
